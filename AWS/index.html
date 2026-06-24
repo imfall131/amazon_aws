@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Access Control System - Dashboard</title>
+    <meta name="description" content="RFID Access Control System real-time monitoring and management dashboard.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons (CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(22, 28, 45, 0.6);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-rose: #f43f5e;
+            --accent-amber: #f59e0b;
+            --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --card-hover-bg: rgba(255, 255, 255, 0.02);
+            --shadow-color: rgba(0, 0, 0, 0.37);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-text: #f8fafc;
+            --modal-bg: rgba(11, 15, 25, 0.85);
+        }
+
+        body.light-theme {
+            --bg-color: #f1f5f9;
+            --panel-bg: rgba(255, 255, 255, 0.85);
+            --panel-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --card-hover-bg: rgba(0, 0, 0, 0.03);
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --input-bg: rgba(0, 0, 0, 0.04);
+            --input-text: #0f172a;
+            --modal-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.1) 0px, transparent 50%);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.light-theme {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+        }
+
+        /* Container Layout */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header Style */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 var(--shadow-color);
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .header-title-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-box {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .header-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-text p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .system-time {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--panel-border);
+        }
+        body.light-theme .system-time {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        /* Status Panels */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .status-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px var(--shadow-color);
+        }
+
+        .status-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .status-card.cyan::before { background-color: var(--accent-cyan); }
+        .status-card.green::before { background-color: var(--accent-green); }
+        .status-card.rose::before { background-color: var(--accent-rose); }
+        .status-card.amber::before { background-color: var(--accent-amber); }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        body.light-theme .status-card:hover {
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .status-info h3 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-info .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .status-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-card.cyan .status-icon { background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); }
+        .status-card.green .status-icon { background: rgba(16, 189, 129, 0.1); color: var(--accent-green); }
+        .status-card.rose .status-icon { background: rgba(244, 63, 94, 0.1); color: var(--accent-rose); }
+        .status-card.amber .status-icon { background: rgba(245, 158, 11, 0.1); color: var(--accent-amber); }
+
+        /* Main Workspace Grid */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 1.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 1rem;
+        }
+        body.light-theme .panel-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .panel-title i {
+            color: var(--accent-cyan);
+        }
+
+        /* Action Buttons */
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            text-decoration: none;
+            outline: none;
+        }
+        body.light-theme .btn {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        body.light-theme .btn:hover {
+            background: rgba(0, 0, 0, 0.06);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), #0891b2);
+            color: #0b0f19;
+            border: none;
+            font-weight: 600;
+        }
+        body.light-theme .btn-primary {
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #22d3ee, var(--accent-cyan));
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+
+        /* Log Table Styles */
+        .log-container {
+            overflow-y: auto;
+            max-height: 450px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .log-table th {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        body.light-theme .log-table th {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .log-table td {
+            padding: 1rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            vertical-align: middle;
+        }
+        body.light-theme .log-table td {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .log-row {
+            animation: fadeInRow 0.5s ease-out forwards;
+            transition: background-color 0.2s;
+        }
+
+        .log-row:hover {
+            background: var(--card-hover-bg);
+        }
+
+        @keyframes fadeInRow {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .badge-error { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+        .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+
+        .uid-code {
+            font-family: monospace;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            color: var(--accent-cyan);
+        }
+        body.light-theme .uid-code {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Card List Panel (Sidebar) */
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+            max-height: 450px;
+        }
+
+        .user-card-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s;
+        }
+        body.light-theme .user-card-item {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .user-card-item:hover {
+            background: var(--card-hover-bg);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: scale(1.02);
+        }
+        body.light-theme .user-card-item:hover {
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .card-user-info {
+            flex-grow: 1;
+        }
+
+        .card-user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .card-user-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.15rem;
+        }
+
+        .card-user-phone {
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Mock Control Panel (Simulation Alert) */
+        .simulation-banner {
+            background: rgba(6, 182, 212, 0.08);
+            border: 1px dashed rgba(6, 182, 212, 0.3);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .simulation-banner p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .simulation-banner strong {
+            color: var(--accent-cyan);
+        }
+
+        /* Modal Overlay & Card Form */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--modal-bg);
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 20px 40px var(--shadow-color);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 460px;
+            padding: 2rem;
+            transform: scale(0.9);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            background: var(--input-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            padding: 0.7rem;
+            color: var(--input-text);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <!-- Header -->
+        <header>
+            <div class="header-title-area">
+                <div class="logo-box">
+                    <i data-lucide="nfc"></i>
+                </div>
+                <div class="header-text">
+                    <h1>RFID Access Control System</h1>
+                    <p>실시간 모니터링 & 출입 제어 시스템</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button class="btn" id="theme-toggle" onclick="toggleTheme()" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;">
+                    <i data-lucide="sun" id="theme-icon"></i>
+                </button>
+                <div class="system-time">
+                    <i data-lucide="clock"></i>
+                    <span id="live-clock">00:00:00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Simulation Control Banner -->
+        <div class="simulation-banner">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="terminal" style="color: var(--accent-cyan);"></i>
+                <p>현재 <strong>디바이스 연동 활성 상태</strong>입니다. 아래 버튼으로 가상 태그 동작을 시뮬레이션하여 디비에 저장할 수 있습니다.</p>
+            </div>
+            <button class="btn btn-primary" id="btn-simulate" onclick="simulateTag()">
+                <i data-lucide="scan"></i> 가상 카드 태그하기
+            </button>
+        </div>
+
+        <!-- Status Cards -->
+        <div class="status-grid">
+            <div class="status-card cyan">
+                <div class="status-info">
+                    <h3>오늘 총 태그</h3>
+                    <div class="value" id="count-total">0</div>
+                </div>
+                <div class="status-icon">
+                    <i data-lucide="credit-card"></i>
+                </div>
+            </div>
+            <div class="status-card green">
+                <div class="status-info">
+                    <h3>승인된 출입</h3>
+                    <div class="value" id="count-success">0</div>
+                </div>
+                <div class="status-icon">
+                    <i data-lucide="shield-check"></i>
+                </div>
+            </div>
+            <div class="status-card rose">
+                <div class="status-info">
+                    <h3>미승인/거부</h3>
+                    <div class="value" id="count-failed">0</div>
+                </div>
+                <div class="status-icon">
+                    <i data-lucide="shield-alert"></i>
+                </div>
+            </div>
+            <div class="status-card amber">
+                <div class="status-info">
+                    <h3>리더기 상태</h3>
+                    <div class="value" style="font-size: 1.3rem; color: var(--accent-green); display: flex; align-items: center; gap: 0.4rem; margin-top: 0.4rem;">
+                        <span style="display: inline-block; width: 10px; height: 10px; background-color: var(--accent-green); border-radius: 50%; animation: pulse 1.5s infinite;"></span>
+                        ONLINE
+                    </div>
+                </div>
+                <div class="status-icon">
+                    <i data-lucide="cpu"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="workspace-grid">
+            
+            <!-- Logs Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i data-lucide="activity"></i>
+                        <span>실시간 출입 기록 (Real-time Logs)</span>
+                    </div>
+                    <div class="btn-group">
+                        <a href="/api.php?action=download_csv" class="btn btn-primary" id="btn-download">
+                            <i data-lucide="download"></i> CSV 다운로드
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="log-container">
+                    <table class="log-table">
+                        <thead>
+                            <tr>
+                                <th>태그 시간</th>
+                                <th>사용자명 / 카드 정보</th>
+                                <th>카드 UID</th>
+                                <th>상태</th>
+                                <th>비고 / 작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 2rem;">로그를 가져오는 중입니다...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Registered Cards (Sidebar) -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i data-lucide="users"></i>
+                        <span>등록된 관리 대상</span>
+                    </div>
+                    <button class="btn btn-sm btn-primary" onclick="openRegisterModal()">
+                        <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i> 등록
+                    </button>
+                </div>
+                
+                <div class="card-list" id="users-list">
+                    <!-- User list loaded dynamically from database -->
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Registration Modal -->
+    <div id="register-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="panel-header" style="border: none; padding-bottom: 0;">
+                <div class="panel-title">
+                    <i data-lucide="user-plus" style="color: var(--accent-cyan);"></i>
+                    <span id="modal-title">RFID 카드 사용자 등록</span>
+                </div>
+                <button class="btn btn-sm" onclick="closeRegisterModal()">닫기</button>
+            </div>
+            
+            <form id="register-form" onsubmit="submitRegistration(event)" style="display: flex; flex-direction: column; gap: 1.2rem;">
+                <div class="form-group">
+                    <label for="reg-uid">카드 UID</label>
+                    <input type="text" id="reg-uid" class="form-input" required placeholder="예: 04 A2 3B 8C" style="font-family: monospace; font-weight: bold; letter-spacing: 0.5px;">
+                </div>
+                <div class="form-group">
+                    <label for="reg-username">사용자 이름</label>
+                    <input type="text" id="reg-username" class="form-input" required placeholder="예: 홍길동">
+                </div>
+                <div class="form-group">
+                    <label for="reg-role">소속 / 역할</label>
+                    <input type="text" id="reg-role" class="form-input" placeholder="예: 개발팀 팀장 / 청사 방문객">
+                </div>
+                <div class="form-group">
+                    <label for="reg-phone">전화번호</label>
+                    <input type="text" id="reg-phone" class="form-input" placeholder="예: 010-1234-5678">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="justify-content: center; padding: 0.75rem; margin-top: 0.5rem;">
+                    <i data-lucide="save"></i> 등록 및 DB 저장하기
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Lucide 아이콘 초기화
+        lucide.createIcons();
+
+        // 펄스 애니메이션용 CSS 추가
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(0.95); opacity: 0.5; }
+                50% { transform: scale(1.1); opacity: 1; }
+                100% { transform: scale(0.95); opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 시계 기능
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('live-clock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // 테마 관리 기능
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            const isLight = body.classList.toggle('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            if (isLight) {
+                icon.setAttribute('data-lucide', 'moon');
+            } else {
+                icon.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons();
+        }
+
+        // 테마 초기화
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            document.getElementById('theme-icon').setAttribute('data-lucide', 'moon');
+        } else {
+            document.getElementById('theme-icon').setAttribute('data-lucide', 'sun');
+        }
+        lucide.createIcons();
+
+        // 모달 관리
+        function openRegisterModal(uid = '') {
+            document.getElementById('reg-uid').value = uid;
+            document.getElementById('reg-username').value = '';
+            document.getElementById('reg-role').value = '';
+            document.getElementById('reg-phone').value = '';
+            
+            // 기존 등록자면 정보 수정을 알리도록 타이틀 변경
+            if (uid !== '') {
+                document.getElementById('modal-title').textContent = "RFID 사용자 정보 편집/등록";
+            } else {
+                document.getElementById('modal-title').textContent = "RFID 신규 사용자 등록";
+            }
+            
+            const modal = document.getElementById('register-modal');
+            modal.classList.add('active');
+        }
+
+        function closeRegisterModal() {
+            const modal = document.getElementById('register-modal');
+            modal.classList.remove('active');
+        }
+
+        // DB 등록 및 수정 요청
+        async function submitRegistration(event) {
+            event.preventDefault();
+            
+            const uid = document.getElementById('reg-uid').value.trim();
+            const username = document.getElementById('reg-username').value.trim();
+            const role = document.getElementById('reg-role').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            
+            try {
+                const response = await fetch('/api.php?action=register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uid, username, role, phone })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert(result.message);
+                    closeRegisterModal();
+                    
+                    // UI 실시간 갱신
+                    fetchUsers();
+                    fetchStats();
+                    fetchLogs();
+                } else {
+                    alert("등록에 실패했습니다: " + result.message);
+                }
+            } catch (e) {
+                console.error("Failed to register card", e);
+                alert("서버 통신 오류가 발생했습니다.");
+            }
+        }
+
+        // DB에서 등록 사용자 목록 실시간 로드
+        async function fetchUsers() {
+            try {
+                const response = await fetch('/api.php?action=users');
+                const users = await response.json();
+                if (Array.isArray(users)) {
+                    renderUsers(users);
+                }
+            } catch (e) {
+                console.error("Failed to fetch users from server", e);
+            }
+        }
+
+        function renderUsers(users) {
+            const container = document.getElementById('users-list');
+            container.innerHTML = '';
+            
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; padding: 2rem 0;">
+                        등록된 사용자가 없습니다.
+                    </div>
+                `;
+                return;
+            }
+
+            users.forEach(u => {
+                const item = document.createElement('div');
+                item.className = 'user-card-item';
+                
+                // 전화번호 노출 문자열 생성
+                const phoneStr = u.phone ? `<div class="card-user-phone"><i data-lucide="phone" style="width:12px; height:12px;"></i> ${u.phone}</div>` : '';
+                
+                item.innerHTML = `
+                    <div class="avatar" onclick="openRegisterModal('${u.uid}')" style="cursor: pointer;" title="정보 편집">${u.name ? u.name.substring(0,1) : u.username.substring(0, 1)}</div>
+                    <div class="card-user-info">
+                        <div class="card-user-name" onclick="openRegisterModal('${u.uid}')" style="cursor: pointer;" title="정보 편집">${u.username}</div>
+                        <div class="card-user-role">${u.role || '소속 없음'} • UID: <span style="font-family: monospace; color: var(--accent-cyan); font-size: 0.8rem;">${u.uid}</span></div>
+                        ${phoneStr}
+                    </div>
+                    <span class="badge badge-success" style="padding: 0.2rem 0.4rem; font-size: 0.65rem; cursor: pointer;" onclick="openRegisterModal('${u.uid}')">편집</span>
+                `;
+                container.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
+        // API 연동: 통계 정보 가져오기
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api.php?action=stats');
+                const data = await response.json();
+                if (data && !data.error) {
+                    document.getElementById('count-total').textContent = data.total;
+                    document.getElementById('count-success').textContent = data.success;
+                    document.getElementById('count-failed').textContent = data.failed;
+                }
+            } catch (e) {
+                console.error("Failed to fetch stats from server", e);
+            }
+        }
+
+        // API 연동: 실시간 로그 가져오기
+        async function fetchLogs() {
+            try {
+                const response = await fetch('/api.php?action=logs');
+                const logs = await response.json();
+                if (Array.isArray(logs)) {
+                    renderLogs(logs);
+                }
+            } catch (e) {
+                console.error("Failed to fetch logs from server", e);
+            }
+        }
+
+        function renderLogs(logs) {
+            const body = document.getElementById('log-body');
+            body.innerHTML = '';
+            
+            if (logs.length === 0) {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 2rem;">출입 기록이 없습니다.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            logs.forEach(log => {
+                const row = document.createElement('tr');
+                row.className = 'log-row';
+                
+                const badgeClass = log.status === 'success' ? 'badge-success' : 'badge-error';
+                const badgeIcon = log.status === 'success' ? 'check' : 'x-circle';
+                const badgeText = log.status === 'success' ? '승인' : '거부';
+                
+                const timePart = log.tagged_at.split(' ')[1] || log.tagged_at;
+
+                // 거부 상태 로그에는 간편 등록 버튼 노출
+                let remarksHtml = log.remarks;
+                if (log.status === 'failed') {
+                    remarksHtml = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span>${log.remarks}</span>
+                            <button class="btn btn-sm btn-primary" onclick="openRegisterModal('${log.uid}')">
+                                <i data-lucide="user-plus" style="width:12px; height:12px;"></i> 등록하기
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    remarksHtml = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span>${log.remarks}</span>
+                            <button class="btn btn-sm" onclick="openRegisterModal('${log.uid}')" style="padding:0.15rem 0.4rem; font-size:0.7rem;">
+                                <i data-lucide="edit" style="width:10px; height:10px;"></i> 수정
+                            </button>
+                        </div>
+                    `;
+                }
+
+                row.innerHTML = `
+                    <td style="color: var(--text-secondary); font-weight: 500;">${timePart}</td>
+                    <td style="font-weight: 600;">${log.username} (${log.role})</td>
+                    <td><span class="uid-code">${log.uid}</span></td>
+                    <td>
+                        <span class="badge ${badgeClass}">
+                            <i data-lucide="${badgeIcon}" style="width: 14px; height: 14px;"></i> ${badgeText}
+                        </span>
+                    </td>
+                    <td>${remarksHtml}</td>
+                `;
+                body.appendChild(row);
+            });
+            
+            lucide.createIcons();
+        }
+
+        // 가상 태그 시뮬레이션 API 전송
+        async function simulateTag() {
+            // 등록된 사용자 데이터를 동적으로 조회하여 그 중 하나를 보내거나 임의의 UID 생성
+            try {
+                const usersResponse = await fetch('/api.php?action=users');
+                const users = await usersResponse.json();
+                
+                const isSuccess = Math.random() > 0.25;
+                let uid = '';
+                
+                if (isSuccess && users.length > 0) {
+                    const user = users[Math.floor(Math.random() * users.length)];
+                    uid = user.uid;
+                } else {
+                    const hexChars = '0123456789ABCDEF';
+                    for (let i = 0; i < 4; i++) {
+                        uid += hexChars[Math.floor(Math.random() * 16)] + hexChars[Math.floor(Math.random() * 16)] + (i < 3 ? ' ' : '');
+                    }
+                }
+
+                const response = await fetch('/api.php?action=tag', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uid: uid })
+                });
+                
+                const result = await response.json();
+                console.log("Simulated tag status:", result);
+                
+                await fetchStats();
+                await fetchLogs();
+
+                const firstRow = document.getElementById('log-body').firstChild;
+                if (firstRow) {
+                    firstRow.style.backgroundColor = isSuccess ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)';
+                    setTimeout(() => {
+                        firstRow.style.backgroundColor = 'transparent';
+                    }, 1000);
+                }
+            } catch (e) {
+                console.error("Failed to post simulation tag", e);
+            }
+        }
+
+        // 초기 로드 및 3초 주기 폴링 시작
+        fetchUsers();
+        fetchStats();
+        fetchLogs();
+
+        setInterval(() => {
+            fetchStats();
+            fetchLogs();
+            fetchUsers(); // 등록 목록도 주기적으로 갱신
+        }, 3000);
+
+    </script>
+</body>
+</html>

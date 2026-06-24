@@ -1,0 +1,4 @@
+IP : 13.125.123.251
+사용자이름: admin
+SSH key : "C:\Users\gaeul kim\Desktop\AWS\SSHkey.pem"
+웹 폴더 : /var/www/html
